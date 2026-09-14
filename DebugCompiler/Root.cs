@@ -22,6 +22,8 @@ using TreyarchCompiler.Utilities;
 using XDevkit;
 
 
+
+
 // Supported Bo3 versions
 enum Bo3Version
 {
@@ -1257,12 +1259,6 @@ namespace DebugCompiler
                 {
                     string hash = ComputeSHA256Hash(stream);
 
-                    // MS Store
-                    if (hash == "72c8a21763adbfac9e1b2bcd6f93b05ecf437610e16430d99a1680ea0f827c17"){
-                        Console.WriteLine($"Bo3 Enhanced detected!\n");
-                        return Bo3Version.MSStore;
-                    }
-
                     // Steam 3 March 2023
                     if (hash == "66b95eb4667bd5b3b3d230e7bed1d29ccd261d48ca2699f01216c863be24ff44")
                     {
@@ -1285,7 +1281,7 @@ namespace DebugCompiler
                     }
 
                     // If we cant find a version, lets assume latest Steam version
-                    Console.WriteLine($"Unknown Bo3 version...\nPath: {exePath} \nHash: {hash}");
+                    Console.WriteLine($"Unknown Bo3 version...\nPath: {exePath} \nHash: {hash}\n Assuming Bo3 Steam 10 September 2026");
                     return Bo3Version.Steam_10_september_2026;
                 }
             }
@@ -1301,8 +1297,6 @@ namespace DebugCompiler
 
         private int InjectT7(string replacePath, byte[] buffer, hotmode hot, bool noruntime)
         {
-
-            Console.WriteLine($"Injecting Script SHA256: {ComputeSHA256Hash(buffer)}");
 
             NoExcept(FreeT7Script);
             GSICInfo gsi = null;
@@ -1354,25 +1348,6 @@ namespace DebugCompiler
 
             Bo3Version version = DetectBo3Version(bo3);
 
-            /*PointerEx off = 0x0;
-            Bo3Version version = DetectBo3Version(bo3);
-            if(version == Bo3Version.MSStore)
-            {
-                off = 0xF3B1330;
-            }
-            else if(version == Bo3Version.Steam2023)
-            {
-                off = 0x9407AB0;
-            }
-            else if(version == Bo3Version.Steam2026)
-            {
-                off = 0x9388AB0;
-            }
-            else
-            {
-                return Error("Unsupported Black Ops III version.");
-            }*/
-
 
             IntPtr moduleBase = bo3["blackops3.exe"].BaseAddress;
             int moduleSize = bo3["blackops3.exe"].BaseModule.ModuleMemorySize;
@@ -1386,13 +1361,6 @@ namespace DebugCompiler
             // Bo3 Enhanced
             if ( IsWindowsStore)
             {
-                /*byte[] bo3_scriptparsetree_pattern = {
-                    0x48, 0x89, 0x05,          // mov [rip+disp32], rax
-                    0x00, 0x00, 0x00, 0x00,    // disp32
-                    0x48, 0x89, 0x05,          // mov [rip+disp32], rax
-                    0x00, 0x00, 0x00, 0x00,    // disp32
-                    0xC7, 0x05                 // mov dword ptr [rip+disp32], ...
-                };*/
 
                 byte[] bo3_scriptparsetree_pattern = {
                     0x48, 0x89, 0x05,                // mov [rip+disp32], rax
@@ -1403,8 +1371,6 @@ namespace DebugCompiler
                     0x00, 0x00, 0x00, 0x00,          // disp32
                     0x58, 0x00, 0x00, 0x00           // imm32 = 0x58
                 };
-
-                //const string bo3_scriptparsetree_mask = "xxx????xxx????xx";
 
                 const string bo3_scriptparsetree_mask = "xxx????xxx????xx????xxxx";
                 scanned_off = ScanPool(bo3.BaseProcess.Handle, moduleBase, moduleSize, bo3_scriptparsetree_pattern, bo3_scriptparsetree_mask);
@@ -1463,6 +1429,8 @@ namespace DebugCompiler
             {
                 return Error($"Invalid ScriptParseTree count: {sptCount}");
             }
+
+            Console.WriteLine($"Injecting Script SHA256: {ComputeSHA256Hash(buffer)}");
 
             var SPTEntries = bo3.GetArray<T7SPT>(sptGlob, sptCount);
             for (int i = 0; i < SPTEntries.Length; i++)
@@ -1862,9 +1830,6 @@ namespace DebugCompiler
         private int InjectT9(string replacePath, byte[] buffer, CompilerConfig cfg, bool client)
         {
 
-
-            Console.WriteLine($"Injecting Script SHA256: {ComputeSHA256Hash(buffer)}");
-
             if (client)
             {
                 NoExcept(FreeT9ScriptClient);
@@ -1967,6 +1932,8 @@ namespace DebugCompiler
             {
                 return Error($"Invalid ScriptParseTree count: {sptCount}");
             }
+
+            Console.WriteLine($"Injecting Script SHA256: {ComputeSHA256Hash(buffer)}");
 
             var SPTEntries =
                 bocw.GetArray<T9SPT>(sptGlob,sptCount);

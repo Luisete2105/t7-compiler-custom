@@ -671,14 +671,14 @@ namespace DebugCompiler
             if (patternLen == 0 || patternLen != pattern.Length)
             {
                 Console.WriteLine("[ScanPattern] ERROR: Pattern/mask length mismatch.");
-                Console.WriteLine("=================================");
+                Console.WriteLine("=================================\n");
                 return IntPtr.Zero;
             }
 
             if (patternLen > 0x1000)
             {
                 Console.WriteLine("[ScanPattern] ERROR: Pattern exceeds 0x1000 bytes.");
-                Console.WriteLine("=================================");
+                Console.WriteLine("=================================\n");
                 return IntPtr.Zero;
             }
 
@@ -698,7 +698,7 @@ namespace DebugCompiler
             if (delta <= 0)
             {
                 Console.WriteLine("[ScanPattern] ERROR: Invalid scan delta.");
-                Console.WriteLine("=================================");
+                Console.WriteLine("=================================\n");
                 return IntPtr.Zero;
             }
 
@@ -746,7 +746,7 @@ namespace DebugCompiler
                         IntPtr result = new IntPtr(current + offset);
 
                         Console.WriteLine($"[ScanPattern] MATCH FOUND: 0x{result.ToInt64():X}");
-                        Console.WriteLine("=================================");
+                        Console.WriteLine("=================================\n");
 
                         return result;
                     }
@@ -756,7 +756,7 @@ namespace DebugCompiler
             }
 
             Console.WriteLine("[ScanPattern] No match found.");
-            Console.WriteLine("=================================");
+            Console.WriteLine("=================================\n");
 
             return IntPtr.Zero;
         }
@@ -779,7 +779,7 @@ namespace DebugCompiler
             {
                 // Debug
                 Console.WriteLine("[ScanPool] Pattern not found.");
-                Console.WriteLine("========================================");
+                Console.WriteLine("========================================\n");
                 return 0;
             }
 
@@ -798,7 +798,7 @@ namespace DebugCompiler
             {
                 // Debug
                 Console.WriteLine("[ScanPool] Failed to read RIP-relative displacement.");
-                Console.WriteLine("========================================");
+                Console.WriteLine("========================================\n");
 
                 return 0;
             }
@@ -822,7 +822,7 @@ namespace DebugCompiler
             Console.WriteLine($"[ScanPool] Match address: 0x{match.ToInt64():X}");
             Console.WriteLine($"[ScanPool] Instruction size:  7");
             Console.WriteLine($"[ScanPool] Resolved s_assetPool: 0x{resolvedAddress:X}");
-            Console.WriteLine("========================================");
+            Console.WriteLine("========================================\n");
 
             return (PointerEx)resolvedAddress;
         }
@@ -1413,7 +1413,7 @@ namespace DebugCompiler
 
             Console.WriteLine($"[+] ScriptParseTree pool: 0x{sptGlob:X}");
             Console.WriteLine($"[+] ScriptParseTree count: {sptCount}");
-            Console.WriteLine($"s_assetPool:ScriptParseTree => {scanned_off:X}");
+            Console.WriteLine($"\ns_assetPool:ScriptParseTree => {scanned_off:X}");
 
             PointerEx off = 0xF3B1330;
             Console.WriteLine($"[OLD]s_assetPool:ScriptParseTree => {bo3["blackops3.exe"][off]}");
@@ -1430,7 +1430,7 @@ namespace DebugCompiler
                 return Error($"Invalid ScriptParseTree count: {sptCount}");
             }
 
-            Console.WriteLine($"Injecting Script SHA256: {ComputeSHA256Hash(buffer)}");
+            Console.WriteLine($"\nInjecting Script SHA256: {ComputeSHA256Hash(buffer)}\n");
 
             var SPTEntries = bo3.GetArray<T7SPT>(sptGlob, sptCount);
             for (int i = 0; i < SPTEntries.Length; i++)
@@ -1560,8 +1560,6 @@ namespace DebugCompiler
         private int InjectT8(string replacePath, byte[] buffer, CompilerConfig cfg, bool client)
         {
 
-            Console.WriteLine($"Injecting Script SHA256: {ComputeSHA256Hash(buffer)}");
-
             if (client)
             {
                 NoExcept(FreeT8ScriptClient);
@@ -1606,6 +1604,7 @@ namespace DebugCompiler
                     return Error("Script is not a valid compiled script. Please use a script compiled for Black Ops 4.");
                 }
             }
+
             ProcessEx bo4 = "blackops4";
             if (bo4 is null)
             {
@@ -1614,13 +1613,14 @@ namespace DebugCompiler
 
             bo4.OpenHandle();
             OriginalPID = bo4.BaseProcess.Id;
-            Console.WriteLine($"s_assetPool:ScriptParseTree => {bo4[0x91285b0]}");//move this to pointer next
+            Console.WriteLine($"\ns_assetPool:ScriptParseTree => {bo4[0x91285b0]}");//move this to pointer next
             var sptGlob = bo4.GetValue<ulong>(bo4[0x91285b0]);
             var sptCount = bo4.GetValue<int>(bo4[0x91285b0 + 0x14]);
             Console.WriteLine($"Old SPT:  {bo4[0x91285b0]}");
             Console.WriteLine($"Base: {bo4.BaseProcess.MainModule.BaseAddress}");
             Console.WriteLine($"SPT pool: 0x{sptGlob:X}");
             Console.WriteLine($"SPT count: {sptCount}");
+            Console.WriteLine($"\nInjecting Script SHA256: {ComputeSHA256Hash(buffer)}\n");
             var SPTEntries = bo4.GetArray<T8SPT>(sptGlob, sptCount);
             replacePath = replacePath.ToLower().Trim().Replace("\\", "/");
             var surrogateScript = T8s64Hash(replacePath); // script we are hooking
@@ -1838,6 +1838,7 @@ namespace DebugCompiler
             {
                 NoExcept(FreeT9ScriptServer);
             }
+
             GSICInfoT8 gsi = null;
             if (BitConverter.ToInt64(buffer, 0) != 0x38000A0D43534780)
             {
@@ -1904,7 +1905,7 @@ namespace DebugCompiler
 
             PointerEx sptPoolAddress = off + (0x20 * 68);
 
-            Console.WriteLine($"[+] s_assetPool: 0x{off:X}");
+            Console.WriteLine($"\n[+] s_assetPool: 0x{off:X}");
             Console.WriteLine($"[+] s_assetPool:ScriptParseTree => 0x{sptPoolAddress:X}");
 
             ulong sptGlob;
@@ -1933,7 +1934,7 @@ namespace DebugCompiler
                 return Error($"Invalid ScriptParseTree count: {sptCount}");
             }
 
-            Console.WriteLine($"Injecting Script SHA256: {ComputeSHA256Hash(buffer)}");
+            Console.WriteLine($"\nInjecting Script SHA256: {ComputeSHA256Hash(buffer)}\n");
 
             var SPTEntries =
                 bocw.GetArray<T9SPT>(sptGlob,sptCount);
